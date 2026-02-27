@@ -3,18 +3,23 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import express from 'express';
 
+let app: any = null;
 const server = express();
 
-export const createServer = async (expressInstance: any) => {
-  const app = await NestFactory.create(
+export const createServer = async () => {
+  if (app) return app;
+
+  const nestApp = await NestFactory.create(
     AppModule,
-    new ExpressAdapter(expressInstance),
+    new ExpressAdapter(server),
   );
-  app.enableCors();
-  await app.init();
+  nestApp.enableCors();
+  await nestApp.init();
+  app = nestApp;
+  return app;
 };
 
 export default async (req: any, res: any) => {
-  await createServer(server);
+  await createServer();
   server(req, res);
 };
